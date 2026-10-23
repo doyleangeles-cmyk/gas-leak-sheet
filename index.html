@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Quarterly Leak Inspection — Angeles Oilfield Services LLC</title>
+<style>
+  :root {
+    --bg: #ece5d3; --surface: #f8f4ea; --surface-alt: #efe8d6;
+    --text: #2a2519; --dim: #6f6752; --border: #cfc4a6;
+    --accent: #b96e00; --accent-strong: #e8930c; --accent-ink: #ffffff;
+    --leak: #b3271e; --leak-bg: #f9e3e0; --ok: #3d6b1e; --ok-bg: #e7efdb;
+    --radius: 10px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #17150f; --surface: #221f17; --surface-alt: #2b2718;
+      --text: #ede6d2; --dim: #a89d7f; --border: #4a4230;
+      --accent: #f0a832; --accent-strong: #e8930c; --accent-ink: #1c180e;
+      --leak: #ff7a6e; --leak-bg: #3d1f1a; --ok: #a5cf7e; --ok-bg: #26331a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px; line-height: 1.45;
+  }
+  .display { font-family: "Arial Narrow", "Liberation Sans Narrow", system-ui, sans-serif; letter-spacing: .01em; }
+  header {
+    position: sticky; top: 0; z-index: 20; background: var(--bg);
+    border-bottom: 2px solid var(--border); padding-top: env(safe-area-inset-top);
+  }
+  .wrap { max-width: 48rem; margin: 0 auto; padding: 0 1rem; }
+  .eyebrow { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: .22em; color: var(--dim); margin: 12px 0 0; }
+  h1 { font-size: 24px; font-weight: 600; text-transform: uppercase; line-height: 1.15; margin: 2px 0 0; }
+  nav.tabs {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
+    background: var(--surface-alt); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 4px; margin: 12px 0;
+  }
+  nav.tabs button {
+    border: 0; background: transparent; color: var(--text); cursor: pointer;
+    border-radius: 7px; padding: 8px; font-size: 14px; font-weight: 600; font-family: inherit;
+  }
+  nav.tabs button[aria-pressed="true"] { background: var(--accent-strong); color: var(--accent-ink); }
+  main { padding: 16px 0 40px; }
+  h2 { font-size: 18px; font-weight: 600; text-transform: uppercase; margin: 0; }
+  h2.big { font-size: 20px; }
+  h3.section {
+    font-size: 18px; font-weight: 600; text-transform: uppercase; letter-spacing: .04em;
+    border-bottom: 2px solid var(--text); padding-bottom: 4px; margin: 24px 0 0;
+  }
+  .dim { color: var(--dim); }
+  .small { font-size: 14px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); }
+  button.btn {
+    border: 0; cursor: pointer; font-family: inherit; font-size: 16px; font-weight: 600;
+    background: var(--accent-strong); color: var(--accent-ink);
+    border-radius: var(--radius); padding: 12px 16px;
+  }
+  button.btn:disabled { opacity: .5; cursor: default; }
+  button.btn-outline {
+    background: var(--surface); color: var(--accent);
+    border: 2px solid var(--accent);
+  }
+  button.btn-danger-confirm { background: var(--leak) !important; color: #fff !important; border-color: var(--leak) !important; }
+  input[type="date"], input[type="text"], select.status, select.plain {
+    font-family: inherit; font-size: 16px; color: var(--text);
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 7px; padding: 12px;
+  }
+  select.status { background: var(--surface-alt); width: 100%; margin-top: 4px; padding: 12px; }
+  label.field-label {
+    display: block; font-size: 12px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .06em; color: var(--dim); margin-top: 8px;
+  }
+  .row { display: flex; gap: 8px; }
+  .row > * { min-width: 0; }
+  .grow { flex: 1; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+  .chip {
+    border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 999px; padding: 8px 12px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: inherit;
+  }
+  .chip[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-strong); color: var(--accent-ink); }
+  .progress { height: 8px; border-radius: 999px; background: var(--surface-alt); overflow: hidden; margin-top: 8px; }
+  .progress > div { height: 100%; background: var(--accent-strong); }
+  ul.wells { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; }
+  li.well { padding: 12px; }
+  li.well.leak { border-color: var(--leak); }
+  li.well.recorded { border-color: var(--ok); }
+  .well-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+  .well-name { font-size: 18px; font-weight: 500; line-height: 1.3; }
+  .badge { flex-shrink: 0; border-radius: 5px; padding: 2px 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; }
+  .badge-leak { background: var(--leak-bg); color: var(--leak); }
+  .badge-repaired { background: var(--ok-bg); color: var(--ok); }
+  .leak-text { color: var(--leak); }
+  .counter { font-size: 14px; font-weight: 500; color: var(--dim); }
+  table.sheet { width: 100%; border-collapse: collapse; table-layout: fixed; font-size: 14px; }
+  table.sheet th, table.sheet td { padding: 6px; }
+  table.sheet thead th { background: var(--surface-alt); text-align: center; font-weight: 600; }
+  table.sheet thead th:first-child { text-align: left; width: 34%; }
+  table.sheet td.name { font-weight: 500; }
+  table.sheet td.cell { text-align: center; }
+  table.sheet tr.well-row { border-top: 1px solid var(--border); }
+  tr.section-bar td {
+    background: var(--text); color: var(--surface); font-weight: 600;
+    text-transform: uppercase; letter-spacing: .05em; padding: 4px 8px;
+  }
+  .sheet-frame { border: 2px solid var(--text); border-radius: var(--radius); overflow: hidden; background: var(--surface); margin-top: 16px; }
+  .sheet-head { border-bottom: 1px solid var(--border); padding: 8px 12px; }
+  ul.plain-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  ul.plain-list li {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    padding: 10px 12px; border-top: 1px solid var(--border);
+  }
+  ul.plain-list li:first-child { border-top: 0; }
+  .remove-btn {
+    border: 0; background: transparent; color: var(--leak); cursor: pointer;
+    font-family: inherit; font-size: 14px; font-weight: 600; border-radius: 7px; padding: 6px 10px; flex-shrink: 0;
+  }
+  .remove-btn.confirm { background: var(--leak); color: #fff; }
+  .offline-note {
+    display: none; margin-top: 12px; padding: 8px 12px; border-radius: var(--radius);
+    background: var(--leak-bg); color: var(--leak); font-size: 14px; font-weight: 600;
+  }
+  .offline-note.show { display: block; }
+  .center-note { text-align: center; color: var(--dim); padding: 32px 0; }
+  a.sheet-link { color: var(--accent); font-weight: 600; font-size: 14px; }
+  .mt { margin-top: 24px; }
+  .full { width: 100%; }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <p class="eyebrow display">Angeles Oilfield Services LLC</p>
+    <h1 class="display">Quarterly Leak Inspection</h1>
+    <nav class="tabs" aria-label="Main views">
+      <button type="button" id="tab-run" aria-pressed="true">Run inspection</button>
+      <button type="button" id="tab-sheet" aria-pressed="false">Year sheet</button>
+      <button type="button" id="tab-wells" aria-pressed="false">Well list</button>
+    </nav>
+  </div>
+</header>
+<main>
+  <div class="wrap">
+    <div id="offline" class="offline-note">Server unreachable — working from this device's local copy. Entries save here and stay on this device.</div>
+    <div id="app"><p class="center-note">Loading…</p></div>
+  </div>
+</main>
+
+<script>
+'use strict';
+
+/* Gas Leak Sheet — single-file client.
+ *
+ * Talks to the server API (/api/wells, /api/inspections, /api/results,
+ * /api/sheet) for persistence. If the API is unreachable (offline,
+ * server asleep), it falls back to a local copy in localStorage with
+ * the same data model, seeded with the same 23 inspection points, so
+ * an inspection can always be run in the field.
+ */
+
+var STATUSES = ['no leaks detected', 'leak detected', 'leak detected, repaired'];
+var SHEET_URL = 'https://docs.google.com/spreadsheets/d/15JNCvIqBmVz6_01gkTy7yokGDLFAy5UfuTN5uDfYttw/edit';
+var LS_KEY = 'gasLeakSheet.v1';
+
+var SEED_WELLS = [
+  ['UNION BANK', 'Tank Farm'], ['UNION BANK', 'Header and gas lines'],
+  ['UNION BANK', 'UnionBank 76 - 12'], ['UNION BANK', 'UnionBank wI1 - 12'],
+  ['UNION BANK', 'UnionBank E1 - 12'], ['UNION BANK', 'UnionBank 86X - 12'],
+  ['UNION BANK', 'W&K Bank of Ca B - 1'],
+  ['TEXACO', 'Tank Farm'], ['TEXACO', 'Header and gas lines'],
+  ['TEXACO', 'Clancy 31 - 18'], ['TEXACO', 'Texaco 42 - 18'],
+  ['TEXACO', 'Texaco 32 - 18'], ['TEXACO', 'Texaco 22 - 18'],
+  ['TEXACO', 'Texaco 33 - 18'], ['TEXACO', 'Clancy 61 - 18'],
+  ['TEXACO', 'Clancy 51 - 18'], ['TEXACO', 'Texaco 52 - 18'],
+  ['TEXACO', 'Texaco E1 - 18'], ['TEXACO', 'Texaco M1 - 18'],
+  ['TEXACO', 'Texaco 43X - 18'], ['TEXACO', 'Texaco 54 - 18'],
+  ['TEXACO', 'Texaco 44 - 18'],
+  ['BLM', 'BLM 27-7']
+];
+
+/* ================= Local fallback store ================= */
+
+function seedLocal() {
+  return {
+    nextWellId: SEED_WELLS.length + 1,
+    nextInspectionId: 1,
+    wells: SEED_WELLS.map(function (pair, i) {
+      return { id: i + 1, section: pair[0], name: pair[1] };
+    }),
+    inspections: [],
+    results: []
+  };
+}
+
+function loadLocal() {
+  try {
+    var raw = localStorage.getItem(LS_KEY);
+    if (raw) {
+      var d = JSON.parse(raw);
+      if (d && Array.isArray(d.wells) && Array.isArray(d.inspections) && Array.isArray(d.results)) return d;
+    }
+  } catch (e) { /* fall through to seed */ }
+  return seedLocal();
+}
+
+function saveLocal(d) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(d)); } catch (e) { /* storage full/blocked */ }
+}
+
+var localDb = loadLocal();
+var online = true;
+
+function localRecordedCount(inspectionId) {
+  return localDb.results.filter(function (r) { return r.inspectionId === inspectionId; }).length;
+}
+
+function localInspections() {
+  return localDb.inspections.slice().sort(function (a, b) {
+    if (a.inspectionDate !== b.inspectionDate) return a.inspectionDate < b.inspectionDate ? 1 : -1;
+    return b.id - a.id;
+  }).map(function (i) {
+    return { id: i.id, inspectionDate: i.inspectionDate, recordedCount: localRecordedCount(i.id) };
+  });
+}
+
+/* ================= API ================= */
+
+function api(path, opts) {
+  opts = opts || {};
+  var init = { method: opts.method || 'GET', headers: {} };
+  if (opts.body !== undefined) {
+    init.headers['Content-Type'] = 'application/json';
+    init.body = JSON.stringify(opts.body);
+  }
+  return fetch(path, init).then(function (res) {
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    return res.json();
+  });
+}
+
+function goOffline() {
+  if (online) {
+    online = false;
+    document.getElementById('offline').classList.add('show');
+  }
+}
+
+/* Each store op tries the server; on failure it runs against the
+   local store instead and flips the app into local mode. */
+var store = {
+  listWells: function () {
+    if (!online) return Promise.resolve({ wells: localDb.wells });
+    return api('/api/wells').catch(function () {
+      goOffline();
+      return { wells: localDb.wells };
+    });
+  },
+  listInspections: function () {
+    if (!online) return Promise.resolve({ inspections: localInspections() });
+    return api('/api/inspections').catch(function () {
+      goOffline();
+      return { inspections: localInspections() };
+    });
+  },
+  createInspection: function (date) {
+    if (!online) {
+      var insp = { id: localDb.nextInspectionId++, inspectionDate: date };
+      localDb.inspections.push(insp);
+      saveLocal(localDb);
+      return Promise.resolve({ id: insp.id });
+    }
+    return api('/api/inspections', { method: 'POST', body: { inspectionDate: date } })
+      .catch(function () {
+        goOffline();
+        return store.createInspection(date);
+      });
+  },
+  deleteInspection: function (id) {
+    if (!online) {
+      localDb.inspections = localDb.inspections.filter(function (i) { return i.id !== id; });
+      localDb.results = localDb.results.filter(function (r) { return r.inspectionId !== id; });
+      saveLocal(localDb);
+      return Promise.resolve({ ok: true });
+    }
+    return api('/api/inspections?id=' + id, { method: 'DELETE' }).catch(function () {
+      goOffline();
+      return store.deleteInspection(id);
+    });
+  },
+  getResults: function (inspectionId) {
+    if (!online) {
+      return Promise.resolve({
+        results: localDb.results
+          .filter(function (r) { return r.inspectionId === inspectionId; })
+          .map(function (r) { return { wellId: r.wellId, status: r.status, note: r.note }; })
+      });
+    }
+    return api('/api/results?inspectionId=' + inspectionId).catch(function () {
+      goOffline();
+      return store.getResults(inspectionId);
+    });
+  },
+  setResult: function (inspectionId, wellId, status, note) {
+    if (!online) {
+      localDb.results = localDb.results.filter(function (r) {
+        return !(r.inspectionId === inspectionId && r.wellId === wellId);
+      });
+      if (status !== null) {
+        localDb.results.push({ inspectionId: inspectionId, wellId: wellId, status: status, note: note || '' });
+      }
+      saveLocal(localDb);
+      return Promise.resolve({ ok: true });
+    }
+    return api('/api/results', {
+      method: 'PUT',
+      body: { inspectionId: inspectionId, wellId: wellId, status: status, note: note || '' }
+    }).catch(function () {
+      goOffline();
+      return store.setResult(inspectionId, wellId, status, note);
+    });
+  },
+  markAll: function (inspectionId, status) {
+    if (!online) {
+      state.wells.forEach(function (w) {
+        var existing = null;
+        localDb.results.forEach(function (r) {
+          if (r.inspectionId === inspectionId && r.wellId === w.id) existing = r;
+        });
+        if (existing) existing.status = status;
+        else localDb.results.push({ inspectionId: inspectionId, wellId: w.id, status: status, note: '' });
+      });
+      saveLocal(localDb);
+      return Promise.resolve({ ok: true });
+    }
+    return api('/api/results/mark-all', {
+      method: 'POST',
+      body: { inspectionId: inspectionId, status: status }
+    }).catch(function () {
+      goOffline();
+      return store.markAll(inspectionId, status);
+    });
+  },
+  getSheet: function (year) {
+    if (!online) {
+      var inss = localDb.inspections
+        .filter(function (i) { return Number(i.inspectionDate.slice(0, 4)) === year; })
+        .slice()
+        .sort(function (a, b) {
+          if (a.inspectionDate !== b.inspectionDate) return a.inspectionDate < b.inspectionDate ? -1 : 1;
+          return a.id - b.id;
+        });
+      var ids = {};
+      inss.forEach(function (i) { ids[i.id] = true; });
+      return Promise.resolve({
+        year: year,
+        inspections: inss.map(function (i) { return { id: i.id, inspectionDate: i.inspectionDate }; }),
+        cells: localDb.results
+          .filter(function (r) { return ids[r.inspectionId]; })
+          .map(function (r) { return { inspectionId: r.inspectionId, wellId: r.wellId, status: r.status, note: r.note }; })
+      });
+    }
+    return api('/api/sheet?year=' + year).catch(function () {
+      goOffline();
+      return store.getSheet(year);
+    });
+  },
+  addWell: function (section, name) {
+    if (!online) {
+      var well = { id: localDb.nextWellId++, section: section, name: name };
+      localDb.wells.push(well);
+      saveLocal(localDb);
+      return Promise.resolve({ well: well });
+    }
+    return api('/api/wells', { method: 'POST', body: { section: section, name: name } })
+      .catch(function () {
+        goOffline();
+        return store.addWell(section, name);
+      });
+  },
+  removeWell: function (id) {
+    if (!online) {
+      localDb.wells = localDb.wells.filter(function (w) { return w.id !== id; });
+      localDb.results = localDb.results.filter(function (r) { return r.wellId !== id; });
+      saveLocal(localDb);
+      return Promise.resolve({ ok: true });
+    }
+    return api('/api/wells?id=' + id, { method: 'DELETE' }).catch(function () {
+      goOffline();
+      return store.removeWell(id);
+    });
+  }
+};
+
+/* ================= State & helpers ================= */
+
+var state = {
+  view: 'run',
+  wells: [],
+  inspections: [],
+  selectedId: null,
+  results: {},        // wellId -> { status, note } for the selected inspection
+  noteDrafts: {},     // wellId -> draft note text
+  resultsFor: null,   // inspection id the loaded results belong to
+  newDate: todayISO(),
+  confirmMarkAll: false,
+  confirmDelete: false,
+  confirmRemove: null,
+  addSection: 'TEXACO',
+  addName: '',
+  sheetYear: null,
+  sheet: null,
+  copied: false
+};
+
+function todayISO() {
+  var now = new Date();
+  var m = String(now.getMonth() + 1).padStart(2, '0');
+  var d = String(now.getDate()).padStart(2, '0');
+  return now.getFullYear() + '-' + m + '-' + d;
+}
+
+/* "2026-02-27" -> "2/27", matching the date style on his real sheet. */
+function fmtMD(iso) {
+  var parts = iso.split('-').map(Number);
+  return parts[1] + '/' + parts[2];
+}
+
+/* "2026-02-27" -> "Friday, February 27, 2026" */
+function fmtLong(iso) {
+  var parts = iso.split('-').map(Number);
+  return new Date(parts[0], parts[1] - 1, parts[2]).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric'
+  });
+}
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+
+function groupWells(wells) {
+  var groups = [];
+  wells.forEach(function (w) {
+    var g = null;
+    groups.forEach(function (x) { if (x.section === w.section) g = x; });
+    if (g) g.wells.push(w);
+    else groups.push({ section: w.section, wells: [w] });
+  });
+  return groups;
+}
+
+function isLeak(status) {
+  return status === 'leak detected' || status === 'leak detected, repaired';
+}
+
+function selectedInspection() {
+  var found = null;
+  state.inspections.forEach(function (i) { if (i.id === state.selectedId) found = i; });
+  return found || state.inspections[0] || null;
+}
+
+/* ================= Sheet export (mirrors his Google Sheet) ================= */
+
+function buildSheetRows(wells, sheet) {
+  var cellMap = {};
+  sheet.cells.forEach(function (c) { cellMap[c.inspectionId + ':' + c.wellId] = c.status; });
+  var rows = [];
+  var dates = sheet.inspections.map(function (i) { return fmtMD(i.inspectionDate); });
+  rows.push(['Angeles Oilfield Services LLC']);
+  rows.push(['', sheet.year + '\nQuarterly leak inspection']);
+  rows.push([]);
+  rows.push([''].concat(dates));
+  rows.push([]);
+  var groups = groupWells(wells);
+  groups.forEach(function (group, gi) {
+    if (group.section !== 'BLM') rows.push([group.section]);
+    group.wells.forEach(function (w) {
+      var row = [w.name];
+      sheet.inspections.forEach(function (i) {
+        row.push(cellMap[i.id + ':' + w.id] || '');
+      });
+      rows.push(row);
+    });
+    if (gi < groups.length - 1) rows.push([]);
+  });
+  /* Notes ride below the grid so the pasted sheet cells stay
+     word-for-word the statuses, exactly like the real sheet. */
+  var noted = sheet.cells.filter(function (c) { return c.note && c.note.trim() !== ''; });
+  if (noted.length > 0) {
+    rows.push([]);
+    rows.push(['Notes']);
+    noted.forEach(function (c) {
+      var insp = null, well = null;
+      sheet.inspections.forEach(function (i) { if (i.id === c.inspectionId) insp = i; });
+      wells.forEach(function (w) { if (w.id === c.wellId) well = w; });
+      if (insp && well) rows.push([fmtMD(insp.inspectionDate) + ' — ' + well.name + ' — ' + c.note]);
+    });
+  }
+  return rows;
+}
+
+function toDelimited(rows, delim) {
+  return rows.map(function (row) {
+    return row.map(function (cell) {
+      if (cell.indexOf(delim) !== -1 || cell.indexOf('"') !== -1 || cell.indexOf('\n') !== -1) {
+        return '"' + cell.replace(/"/g, '""') + '"';
+      }
+      return cell;
+    }).join(delim);
+  }).join('\n');
+}
+
+/* ================= Rendering ================= */
+
+var appEl = document.getElementById('app');
+
+function render() {
+  document.getElementById('tab-run').setAttribute('aria-pressed', state.view === 'run' ? 'true' : 'false');
+  document.getElementById('tab-sheet').setAttribute('aria-pressed', state.view === 'sheet' ? 'true' : 'false');
+  document.getElementById('tab-wells').setAttribute('aria-pressed', state.view === 'wells' ? 'true' : 'false');
+  if (state.wells.length === 0) {
+    appEl.innerHTML = '<div class="card" style="padding:20px;text-align:center">' +
+      '<p><strong>Your well list hasn\u2019t been imported yet.</strong></p>' +
+      '<p class="dim small">It comes from your Leak Inspection sheet — 23 wells and locations ' +
+      'across Union Bank, Texaco, and BLM 27-7. If this message stays, reopen the app in a moment.</p></div>';
+    return;
+  }
+  if (state.view === 'run') renderRun();
+  else if (state.view === 'sheet') renderSheet();
+  else renderWells();
+}
+
+function refreshInspections(keepResults) {
+  return store.listInspections().then(function (res) {
+    state.inspections = res.inspections;
+    var sel = selectedInspection();
+    if (!sel) { state.results = {}; state.resultsFor = null; render(); return; }
+    if (!keepResults || state.resultsFor !== sel.id) {
+      return loadResults(sel.id);
+    }
+    render();
+  });
+}
+
+function loadResults(inspectionId) {
+  return store.getResults(inspectionId).then(function (res) {
+    state.results = {};
+    state.noteDrafts = {};
+    res.results.forEach(function (r) {
+      state.results[r.wellId] = { status: r.status, note: r.note };
+      state.noteDrafts[r.wellId] = r.note;
+    });
+    state.resultsFor = inspectionId;
+    render();
+  });
+}
+
+function renderRun() {
+  var sel = selectedInspection();
+  var h = '';
+
+  h += '<section aria-label="Start a new inspection">';
+  h += '<h2 class="display">New inspection</h2>';
+  h += '<div class="row" style="margin-top:8px">';
+  h += '<label class="sr-only" for="new-date" style="position:absolute;left:-9999px">Inspection date</label>';
+  h += '<input id="new-date" type="date" class="grow" value="' + esc(state.newDate) + '">';
+  h += '<button type="button" class="btn" id="btn-start">Start</button>';
+  h += '</div></section>';
+
+  if (state.inspections.length > 0) {
+    h += '<section class="mt" aria-label="Open an inspection">';
+    h += '<h2 class="display">Inspections on file</h2>';
+    h += '<div class="chips">';
+    state.inspections.forEach(function (i) {
+      var active = sel && sel.id === i.id;
+      h += '<button type="button" class="chip" data-insp="' + i.id + '" aria-pressed="' + (active ? 'true' : 'false') + '">' +
+        esc(fmtLong(i.inspectionDate)) + ' · ' + i.recordedCount + '/' + state.wells.length + '</button>';
+    });
+    h += '</div></section>';
+  }
+
+  if (!sel) {
+    h += '<p class="center-note">Pick a date above and tap Start — then work down the well list, ' +
+      'choosing each well\u2019s leak status. The sheet fills in as you go.</p>';
+    appEl.innerHTML = h;
+    bindRunBasics();
+    return;
+  }
+
+  var recorded = Object.keys(state.results).length;
+  var leaks = 0;
+  Object.keys(state.results).forEach(function (k) { if (isLeak(state.results[k].status)) leaks++; });
+  var pct = state.wells.length ? (recorded / state.wells.length) * 100 : 0;
+
+  h += '<section class="mt" aria-label="Inspection checklist">';
+  h += '<div style="display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:8px">';
+  h += '<h2 class="big display">' + esc(fmtLong(sel.inspectionDate)) + '</h2>';
+  h += '<p class="counter">' + recorded + ' of ' + state.wells.length + ' recorded' +
+    (leaks > 0 ? ' <span class="leak-text">· ' + leaks + ' leak' + (leaks === 1 ? '' : 's') + '</span>' : '') + '</p>';
+  h += '</div>';
+  h += '<div class="progress" role="progressbar" aria-valuenow="' + recorded + '" aria-valuemin="0" aria-valuemax="' + state.wells.length + '" aria-label="Wells recorded"><div style="width:' + pct + '%"></div></div>';
+
+  h += '<button type="button" id="btn-markall" class="' +
+    (state.confirmMarkAll ? 'btn btn-danger-confirm full' : 'btn btn-outline full') +
+    '" style="margin-top:16px">' +
+    (state.confirmMarkAll
+      ? 'Tap again to set every well to \u201Cno leaks detected\u201D'
+      : 'Mark all: no leaks detected') + '</button>';
+
+  groupWells(state.wells).forEach(function (group) {
+    h += '<h3 class="section display">' + esc(group.section) + '</h3>';
+    h += '<ul class="wells">';
+    group.wells.forEach(function (well) {
+      var rec = state.results[well.id];
+      var status = rec ? rec.status : '';
+      var note = state.noteDrafts[well.id] !== undefined ? state.noteDrafts[well.id] : (rec ? rec.note : '');
+      var cls = status === 'leak detected' ? 'well leak' : (status ? 'well recorded' : 'well');
+      h += '<li class="card ' + cls + '">';
+      h += '<div class="well-head"><span class="well-name display">' + esc(well.name) + '</span>';
+      if (status === 'leak detected') h += '<span class="badge badge-leak">Leak</span>';
+      if (status === 'leak detected, repaired') h += '<span class="badge badge-repaired">Repaired</span>';
+      h += '</div>';
+      h += '<label class="field-label" for="status-' + well.id + '">Leak status</label>';
+      h += '<select class="status" id="status-' + well.id + '" data-well="' + well.id + '" aria-label="Leak status for ' + esc(well.name) + '">';
+      h += '<option value=""' + (status === '' ? ' selected' : '') + '>— not recorded —</option>';
+      STATUSES.forEach(function (s) {
+        h += '<option value="' + esc(s) + '"' + (status === s ? ' selected' : '') + '>' + esc(s) + '</option>';
+      });
+      h += '</select>';
+      h += '<label class="field-label" for="note-' + well.id + '">Note (optional)</label>';
+      h += '<input type="text" id="note-' + well.id + '" data-note="' + well.id + '" value="' + esc(note) + '" ' +
+        'placeholder="e.g. packing leak at stuffing box" style="width:100%;margin-top:4px;padding:8px 12px">';
+      h += '</li>';
+    });
+    h += '</ul>';
+  });
+
+  h += '<button type="button" id="btn-delete" class="btn-outline full" style="margin-top:32px;padding:12px;border-radius:var(--radius);font-weight:500;font-size:14px;color:var(--leak);background:var(--surface);border:1px solid var(--border);cursor:pointer;font-family:inherit">' +
+    (state.confirmDelete
+      ? 'Tap again to delete this inspection and all its results'
+      : 'Delete this inspection') + '</button>';
+  h += '</section>';
+
+  appEl.innerHTML = h;
+  bindRunBasics();
+
+  document.querySelectorAll('select.status').forEach(function (selEl) {
+    selEl.addEventListener('change', function () {
+      var wellId = Number(selEl.getAttribute('data-well'));
+      var v = selEl.value;
+      var note = state.noteDrafts[wellId] || '';
+      store.setResult(sel.id, wellId, v === '' ? null : v, note).then(function () {
+        if (v === '') delete state.results[wellId];
+        else state.results[wellId] = { status: v, note: note };
+        refreshInspections(true);
+      });
+    });
+  });
+  document.querySelectorAll('input[data-note]').forEach(function (inp) {
+    var wellId = Number(inp.getAttribute('data-note'));
+    inp.addEventListener('input', function () { state.noteDrafts[wellId] = inp.value; });
+    inp.addEventListener('blur', function () {
+      var rec = state.results[wellId];
+      if (rec && inp.value !== rec.note) {
+        store.setResult(sel.id, wellId, rec.status, inp.value).then(function () {
+          state.results[wellId] = { status: rec.status, note: inp.value };
+        });
+      }
+    });
+  });
+  var markBtn = document.getElementById('btn-markall');
+  markBtn.addEventListener('click', function () {
+    if (state.confirmMarkAll) {
+      state.confirmMarkAll = false;
+      store.markAll(sel.id, 'no leaks detected').then(function () {
+        /* reload from the store so statuses and notes match exactly */
+        return loadResults(sel.id);
+      }).then(function () {
+        refreshInspections(true);
+      });
+    } else {
+      state.confirmMarkAll = true;
+      render();
+    }
+  });
+  markBtn.addEventListener('blur', function () {
+    if (state.confirmMarkAll) { state.confirmMarkAll = false; render(); }
+  });
+  var delBtn = document.getElementById('btn-delete');
+  delBtn.addEventListener('click', function () {
+    if (state.confirmDelete) {
+      state.confirmDelete = false;
+      var deletedId = sel.id;
+      store.deleteInspection(deletedId).then(function () {
+        if (state.selectedId === deletedId) state.selectedId = null;
+        state.results = {};
+        state.resultsFor = null;
+        refreshInspections(false);
+      });
+    } else {
+      state.confirmDelete = true;
+      render();
+    }
+  });
+  delBtn.addEventListener('blur', function () {
+    if (state.confirmDelete) { state.confirmDelete = false; render(); }
+  });
+}
+
+function bindRunBasics() {
+  var dateInp = document.getElementById('new-date');
+  if (dateInp) {
+    dateInp.addEventListener('change', function () { state.newDate = dateInp.value; });
+    dateInp.addEventListener('input', function () { state.newDate = dateInp.value; });
+  }
+  var startBtn = document.getElementById('btn-start');
+  if (startBtn) {
+    startBtn.addEventListener('click', function () {
+      if (!state.newDate) return;
+      startBtn.disabled = true;
+      store.createInspection(state.newDate).then(function (res) {
+        state.selectedId = res.id;
+        state.results = {};
+        state.noteDrafts = {};
+        state.resultsFor = null;
+        refreshInspections(false);
+      });
+    });
+  }
+  document.querySelectorAll('[data-insp]').forEach(function (chip) {
+    chip.addEventListener('click', function () {
+      state.selectedId = Number(chip.getAttribute('data-insp'));
+      state.results = {};
+      state.noteDrafts = {};
+      state.resultsFor = null;
+      loadResults(state.selectedId);
+    });
+  });
+}
+
+function shortLabel(s) {
+  if (!s) return '·';
+  if (s === 'no leaks detected') return 'No leaks';
+  if (s === 'leak detected') return 'LEAK';
+  return 'Leak — repaired';
+}
+
+function sheetYears() {
+  var set = {};
+  state.inspections.forEach(function (i) { set[Number(i.inspectionDate.slice(0, 4))] = true; });
+  set[new Date().getFullYear()] = true;
+  return Object.keys(set).map(Number).sort(function (a, b) { return b - a; });
+}
+
+function renderSheet() {
+  var years = sheetYears();
+  if (state.sheetYear === null || years.indexOf(state.sheetYear) === -1) {
+    state.sheetYear = years[0];
+  }
+  var year = state.sheetYear;
+  var h = '';
+  h += '<div style="display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px">';
+  h += '<div><label class="field-label" for="sheet-year" style="margin-top:0">Sheet year</label>' +
+    '<select id="sheet-year" class="plain" style="margin-top:4px;padding:8px 12px;font-weight:600">';
+  years.forEach(function (y) {
+    h += '<option value="' + y + '"' + (y === year ? ' selected' : '') + '>' + y + '</option>';
+  });
+  h += '</select></div>';
+  h += '<a class="sheet-link" href="' + SHEET_URL + '" target="_blank" rel="noreferrer">Open the real Leak Inspection sheet ↗</a>';
+  h += '</div>';
+
+  if (!state.sheet || state.sheet.year !== year) {
+    h += '<p class="center-note">Loading sheet…</p>';
+    appEl.innerHTML = h;
+    bindSheetBasics();
+    store.getSheet(year).then(function (sheet) {
+      state.sheet = sheet;
+      if (state.view === 'sheet') render();
+    });
+    return;
+  }
+
+  var sheet = state.sheet;
+  if (sheet.inspections.length === 0) {
+    h += '<div class="card" style="margin-top:16px;padding:20px;text-align:center" class="dim">' +
+      '<p class="dim" style="margin:0">No inspections recorded for ' + year + ' yet. Run one from the Run ' +
+      'inspection tab and it will land here, filled in.</p></div>';
+    appEl.innerHTML = h;
+    bindSheetBasics();
+    return;
+  }
+
+  var cellMap = {};
+  sheet.cells.forEach(function (c) { cellMap[c.inspectionId + ':' + c.wellId] = c.status; });
+
+  h += '<div class="sheet-frame">';
+  h += '<div class="sheet-head"><p class="display" style="font-size:18px;font-weight:600;margin:0">Angeles Oilfield Services LLC</p>' +
+    '<p class="dim small" style="margin:0">' + year + ' Quarterly leak inspection</p></div>';
+  h += '<table class="sheet"><thead><tr><th>Well / location</th>';
+  sheet.inspections.forEach(function (i) {
+    h += '<th>' + esc(fmtMD(i.inspectionDate)) + '</th>';
+  });
+  h += '</tr></thead><tbody>';
+  groupWells(state.wells).forEach(function (group) {
+    if (group.section !== 'BLM') {
+      h += '<tr class="section-bar"><td colspan="' + (1 + sheet.inspections.length) + '" class="display">' + esc(group.section) + '</td></tr>';
+    }
+    group.wells.forEach(function (w) {
+      h += '<tr class="well-row"><td class="name">' + esc(w.name) + '</td>';
+      sheet.inspections.forEach(function (i) {
+        var s = cellMap[i.id + ':' + w.id];
+        var style = s === 'leak detected'
+          ? 'font-weight:700;color:var(--leak)'
+          : (s ? 'color:var(--ok)' : 'color:var(--dim)');
+        h += '<td class="cell" style="' + style + '">' + esc(shortLabel(s)) + '</td>';
+      });
+      h += '</tr>';
+    });
+  });
+  h += '</tbody></table></div>';
+
+  h += '<div class="row" style="margin-top:16px;flex-wrap:wrap">';
+  h += '<button type="button" class="btn grow" id="btn-copy">' +
+    (state.copied ? 'Copied — paste it into the sheet' : 'Copy for Google Sheets') + '</button>';
+  h += '<button type="button" class="btn btn-outline grow" id="btn-csv">Download CSV</button>';
+  h += '</div>';
+  h += '<p class="dim small">Copy, then paste into the \u201Cleakinspection ' + year + '\u201D tab of your Leak ' +
+    'Inspection sheet — the rows and columns line up with the real sheet. Leak notes are included below the grid in the copy.</p>';
+
+  appEl.innerHTML = h;
+  bindSheetBasics();
+
+  document.getElementById('btn-copy').addEventListener('click', function () {
+    var text = toDelimited(buildSheetRows(state.wells, sheet), '\t');
+    function done() {
+      state.copied = true;
+      render();
+      setTimeout(function () { state.copied = false; if (state.view === 'sheet') render(); }, 2500);
+    }
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(text).then(done, function () { fallbackCopy(text); done(); });
+    } else {
+      fallbackCopy(text);
+      done();
+    }
+  });
+  document.getElementById('btn-csv').addEventListener('click', function () {
+    var csv = toDelimited(buildSheetRows(state.wells, sheet), ',');
+    var url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'leak-inspection-' + year + '.csv';
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+}
+
+function fallbackCopy(text) {
+  var ta = document.createElement('textarea');
+  ta.value = text;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand('copy'); } catch (e) { /* clipboard unavailable */ }
+  document.body.removeChild(ta);
+}
+
+function bindSheetBasics() {
+  var yearSel = document.getElementById('sheet-year');
+  if (yearSel) {
+    yearSel.addEventListener('change', function () {
+      state.sheetYear = Number(yearSel.value);
+      state.sheet = null;
+      render();
+    });
+  }
+}
+
+function renderWells() {
+  var h = '';
+  h += '<p class="dim small" style="margin-top:0">This is the list from your Leak Inspection sheet. Add a well when a new ' +
+    'one goes on the route; removing one also removes its recorded results.</p>';
+  groupWells(state.wells).forEach(function (group) {
+    h += '<h3 class="section display">' + esc(group.section) + '</h3>';
+    h += '<ul class="plain-list card">';
+    group.wells.forEach(function (w) {
+      var confirming = state.confirmRemove === w.id;
+      h += '<li><span style="font-weight:500">' + esc(w.name) + '</span>' +
+        '<button type="button" class="remove-btn' + (confirming ? ' confirm' : '') + '" data-remove="' + w.id + '">' +
+        (confirming ? 'Tap again to remove' : 'Remove') + '</button></li>';
+    });
+    h += '</ul>';
+  });
+
+  var sections = [];
+  state.wells.forEach(function (w) { if (sections.indexOf(w.section) === -1) sections.push(w.section); });
+  h += '<form id="add-form" class="card" style="margin-top:24px;padding:16px">';
+  h += '<h2 class="display">Add a well</h2>';
+  h += '<label class="field-label" for="add-section">Section</label>';
+  h += '<input type="text" id="add-section" list="well-sections" value="' + esc(state.addSection) + '" style="width:100%;margin-top:4px;padding:10px 12px">';
+  h += '<datalist id="well-sections">';
+  sections.forEach(function (s) { h += '<option value="' + esc(s) + '"></option>'; });
+  h += '</datalist>';
+  h += '<label class="field-label" for="add-name">Well / location name (exactly as it should read on the sheet)</label>';
+  h += '<input type="text" id="add-name" value="' + esc(state.addName) + '" placeholder="e.g. Texaco 62 - 18" style="width:100%;margin-top:4px;padding:10px 12px">';
+  h += '<button type="submit" class="btn full" style="margin-top:16px">Add to the list</button>';
+  h += '</form>';
+
+  appEl.innerHTML = h;
+
+  document.querySelectorAll('[data-remove]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var id = Number(btn.getAttribute('data-remove'));
+      if (state.confirmRemove === id) {
+        state.confirmRemove = null;
+        store.removeWell(id).then(function () {
+          return store.listWells();
+        }).then(function (res) {
+          state.wells = res.wells;
+          state.sheet = null;
+          refreshInspections(true);
+          if (state.view === 'wells') render();
+        });
+      } else {
+        state.confirmRemove = id;
+        render();
+      }
+    });
+    btn.addEventListener('blur', function () {
+      if (state.confirmRemove !== null) { state.confirmRemove = null; render(); }
+    });
+  });
+  var sectionInp = document.getElementById('add-section');
+  var nameInp = document.getElementById('add-name');
+  sectionInp.addEventListener('input', function () { state.addSection = sectionInp.value; });
+  nameInp.addEventListener('input', function () { state.addName = nameInp.value; });
+  document.getElementById('add-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var section = sectionInp.value.trim();
+    var name = nameInp.value.trim();
+    if (!section || !name) return;
+    store.addWell(section, name).then(function () {
+      state.addName = '';
+      return store.listWells();
+    }).then(function (res) {
+      state.wells = res.wells;
+      render();
+    });
+  });
+}
+
+/* ================= Boot & tabs ================= */
+
+document.getElementById('tab-run').addEventListener('click', function () { state.view = 'run'; render(); });
+document.getElementById('tab-sheet').addEventListener('click', function () { state.view = 'sheet'; render(); });
+document.getElementById('tab-wells').addEventListener('click', function () { state.view = 'wells'; render(); });
+
+Promise.all([store.listWells(), store.listInspections()]).then(function (res) {
+  state.wells = res[0].wells;
+  state.inspections = res[1].inspections;
+  var sel = selectedInspection();
+  if (sel) {
+    state.selectedId = sel.id;
+    loadResults(sel.id);
+  } else {
+    render();
+  }
+}).catch(function () {
+  appEl.innerHTML = '<p class="center-note leak-text">Couldn\u2019t load your data. Close and reopen the app to try again.</p>';
+});
+</script>
+</body>
+</html>
