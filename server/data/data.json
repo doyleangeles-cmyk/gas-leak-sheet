@@ -1,0 +1,31 @@
+{
+  "nextWellId": 24,
+  "nextInspectionId": 1,
+  "wells": [
+    {"id": 1, "section": "UNION BANK", "name": "Tank Farm"},
+    {"id": 2, "section": "UNION BANK", "name": "Header and gas lines"},
+    {"id": 3, "section": "UNION BANK", "name": "UnionBank 76 - 12"},
+    {"id": 4, "section": "UNION BANK", "name": "UnionBank wI1 - 12"},
+    {"id": 5, "section": "UNION BANK", "name": "UnionBank E1 - 12"},
+    {"id": 6, "section": "UNION BANK", "name": "UnionBank 86X - 12"},
+    {"id": 7, "section": "UNION BANK", "name": "W&K Bank of Ca B - 1"},
+    {"id": 8, "section": "TEXACO", "name": "Tank Farm"},
+    {"id": 9, "section": "TEXACO", "name": "Header and gas lines"},
+    {"id": 10, "section": "TEXACO", "name": "Clancy 31 - 18"},
+    {"id": 11, "section": "TEXACO", "name": "Texaco 42 - 18"},
+    {"id": 12, "section": "TEXACO", "name": "Texaco 32 - 18"},
+    {"id": 13, "section": "TEXACO", "name": "Texaco 22 - 18"},
+    {"id": 14, "section": "TEXACO", "name": "Texaco 33 - 18"},
+    {"id": 15, "section": "TEXACO", "name": "Clancy 61 - 18"},
+    {"id": 16, "section": "TEXACO", "name": "Clancy 51 - 18"},
+    {"id": 17, "section": "TEXACO", "name": "Texaco 52 - 18"},
+    {"id": 18, "section": "TEXACO", "name": "Texaco E1 - 18"},
+    {"id": 19, "section": "TEXACO", "name": "Texaco M1 - 18"},
+    {"id": 20, "section": "TEXACO", "name": "Texaco 43X - 18"},
+    {"id": 21, "section": "TEXACO", "name": "Texaco 54 - 18"},
+    {"id": 22, "section": "TEXACO", "name": "Texaco 44 - 18"},
+    {"id": 23, "section": "BLM", "name": "BLM 27-7"}
+  ],
+  "inspections": [],
+  "results": []
+}
